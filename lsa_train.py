@@ -1,37 +1,40 @@
-#!/usr/local/bin/python
-
 """
   Apply Latent Semantic Analysis to Wikipedia dataset
 
   Run this after running `python -m gensim.scripts.make_wiki` on enwiki-latest-pages-articles.xml.bz2
+  Args (unlabeled):
+    input_dicttionary: Path to wiki_en_wordids.txt.bz2
+    input_corpus: path to wiki_en_tfidf.mm
+    output_model: somewhere to save the LSA model
   Use LSA to extract latent vectors
-  Use latent vectors to calculate cosine distance between Questions/Answers
-  Pick the answer with the smallest cosine distance
-  Check against correct answer
 """
 
-import logging, gensim, bz2
+import logging, gensim, bz2, sys
 
 logging.basicConfig(
   format='%(asctime)s : %(levelname)s : %(message)s',
   level=logging.INFO
 )
 
+input_dictionary = sys.argv[1]
+input_corpus = sys.argv[2]
+output_model = sys.argv[3]
+
 # load id->word mapping (the dictionary)
-id2word = gensim.corpora.Dictionary.load_from_text(bz2.BZ2File('./data/wiki_en_wordids.txt.bz2'))
+id2word = gensim.corpora.Dictionary.load_from_text(bz2.BZ2File(input_dictionary))
 
 # load corpus iterator
-mm = gensim.corpora.MmCorpus('./data/wiki_en_tfidf.mm')
+mm = gensim.corpora.MmCorpus(input_corpus)
 
 print(mm)
 # MmCorpus(3933461 documents, 100000 features, 612118814 non-zero entries)
 
 # extract num_topics LSI topics; use the default one-pass algorithm
 num_topics = 400
-lsi = gensim.models.lsimodel.LsiModel(corpus=mm, id2word=id2word, num_topics=num_topics)
+model = gensim.models.lsimodel.LsiModel(corpus=mm, id2word=id2word, num_topics=num_topics)
 
 # print the most contributing words (both positively and negatively) for each of the first ten topics
-lsi.print_topics(10)
+model.print_topics(10)
 
 # 2015-11-17 00:21:23,576 : INFO : topic #0(160.363): 0.145*"album" + 0.098*"song" + 0.097*"population" + 0.097*"league" + 0.090*"band" + 0.083*"town" + 0.083*"station" + 0.080*"district" + 0.079*"village" + 0.076*"chart"
 # 2015-11-17 00:21:23,579 : INFO : topic #1(124.548): 0.283*"population" + 0.242*"median" + 0.236*"census" + -0.216*"album" + 0.214*"households" + 0.200*"income" + 0.171*"township" + 0.165*"females" + 0.164*"average" + 0.164*"males"
@@ -49,4 +52,4 @@ lsi.print_topics(10)
 # 2015-11-17 00:21:23,711 : INFO : topic #8(76.934): -0.328*"championships" + 0.235*"league" + -0.207*"medal" + -0.199*"olympics" + 0.193*"species" + -0.154*"olympic" + -0.146*"event" + -0.140*"men" + -0.130*"metres" + -0.129*"village"
 # 2015-11-17 00:21:23,715 : INFO : topic #9(75.469): 0.277*"church" + 0.261*"historic" + -0.252*"village" + 0.178*"register" + -0.164*"gmina" + -0.152*"district" + 0.147*"building" + -0.138*"population" + 0.134*"township" + 0.131*"championships"
 
-lsi.save('./data/lsa_model_1')
+model.save(output_model)
