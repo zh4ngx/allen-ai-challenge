@@ -39,7 +39,7 @@ for line in training_data:
 
   # Generate list of tuples:
   # (Cosine similarity, mapped index 0-3 to A-D)
-  similarities = [(gensim.matutils.cossim(question, answer), chr(idx + 65)) for idx, answer in enumerate(doc_vectors)]
+  similarities = [(gensim.matutils.cossim(model[question], model[answer]), chr(idx + 65)) for idx, answer in enumerate(doc_vectors)]
   chosen_answer = max(similarities)[1]
 
   correct += correct_answer == chosen_answer
@@ -47,7 +47,7 @@ for line in training_data:
 
 print("Correct: %d" % correct)
 print("Total: %d" % total)
-print("Accuracy: %.2f" % (float(correct) / total))
+print("Accuracy: %.4f" % (float(correct) / total))
 
 # python ~/code/kaggle/the-allen-ai-science-challenge/lsa_evaluate.py /home/andy/data/allen-ai/lsa/lsa_model_1 /home/andy/data/allen-ai/training_set.tsv
 # 2015-11-30 23:10:29,726 : INFO : loading LsiModel object from /home/andy/data/allen-ai/lsa/lsa_model_1
