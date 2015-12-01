@@ -7,7 +7,7 @@
   Measure accuracy by simple
 """
 
-import logging, gensim, bz2, sys
+import logging, gensim, bz2, sys, random
 
 logging.basicConfig(
   format='%(asctime)s : %(levelname)s : %(message)s',
@@ -45,17 +45,14 @@ for line in training_data:
   correct += correct_answer == chosen_answer
   total += 1
 
+  if not (correct_answer == chosen_answer) and (random.random() > 0.99):
+    print("Question: %s" % elements.pop(0))
+    print("Correct Answer: %s" % elements[ord(correct_answer) - 65])
+    print("Correct Answer similarity: %.4f" % similarities[ord(correct_answer) - 65][0])
+    print("Chosen Answer: %s" % elements[ord(chosen_answer) - 65])
+    print("Correct Answer similarity: %.4f\n" % similarities[ord(chosen_answer) - 65][0])
+
+
 print("Correct: %d" % correct)
 print("Total: %d" % total)
 print("Accuracy: %.4f" % (float(correct) / total))
-
-# python ~/code/kaggle/the-allen-ai-science-challenge/lsa_evaluate.py /home/andy/data/allen-ai/lsa/lsa_model_1 /home/andy/data/allen-ai/training_set.tsv
-# 2015-11-30 23:10:29,726 : INFO : loading LsiModel object from /home/andy/data/allen-ai/lsa/lsa_model_1
-# 2015-11-30 23:10:29,776 : INFO : loading id2word recursively from /home/andy/data/allen-ai/lsa/lsa_model_1.id2word.* with mmap=r
-# 2015-11-30 23:10:29,777 : INFO : setting ignored attribute projection to None
-# 2015-11-30 23:10:29,777 : INFO : setting ignored attribute dispatcher to None
-# 2015-11-30 23:10:29,777 : INFO : loading LsiModel object from /home/andy/data/allen-ai/lsa/lsa_model_1.projection
-# 2015-11-30 23:10:29,777 : INFO : loading u from /home/andy/data/allen-ai/lsa/lsa_model_1.projection.u.npy with mmap=r
-# Correct: 608
-# Total: 2500
-# Accuracy: 0.24
