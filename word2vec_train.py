@@ -30,8 +30,8 @@ wiki_corpus = WikiCorpus(input_articles, lemmatize=False)
 
 # Write wiki_lines out for future use
 lines_output = open(output_lines, 'w')
-for text in wiki_corpus.get_text():
-    output.write(" ".join(text) + "\n")
+for text in wiki_corpus.get_texts():
+    lines_output.write(" ".join(text) + "\n")
 
 lines_output.close()
 
