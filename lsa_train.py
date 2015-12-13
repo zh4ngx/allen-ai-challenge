@@ -3,7 +3,7 @@
 
   Run this after running `python -m gensim.scripts.make_wiki` on enwiki-latest-pages-articles.xml.bz2
   Args (unlabeled):
-    input_dicttionary: Path to wiki_en_wordids.txt.bz2
+    input_dictionary: Path to wiki_en_wordids.txt.bz2
     input_corpus: path to wiki_en_tfidf.mm
     output_model: somewhere to save the LSA model
   Use LSA to extract latent vectors
