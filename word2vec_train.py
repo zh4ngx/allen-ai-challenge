@@ -24,11 +24,19 @@ logging.basicConfig(
 input_articles = sys.argv[1]
 output_model = sys.argv[2]
 demo_questions = sys.argv[3] # question-words.txt analogy example
+output_lines = sys.argv[4]
 
-wiki_lines = WikiCorpus(input_articles, lemmatize=False)
+wiki_corpus = WikiCorpus(input_articles, lemmatize=False)
+
+# Write wiki_lines out for future use
+lines_output = open(output_lines, 'w')
+for text in wiki_corpus.get_text():
+    output.write(" ".join(text) + "\n")
+
+lines_output.close()
 
 model = Word2Vec(
-    sentences=LineSentence(wiki_lines),
+    sentences=LineSentence(wiki_corpus),
     size=400,
     negative=25,
     window=5,
