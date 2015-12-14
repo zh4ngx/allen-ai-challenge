@@ -20,7 +20,7 @@ input_model = sys.argv[1]
 input_training = sys.argv[2]
 
 # Load model
-model = gensim.models.Word2Vec.load(input_model)
+model = gensim.models.Word2Vec.load(input_model, mmap='r')
 
 # Load 'training' data
 training_data = open(input_training)
@@ -30,27 +30,46 @@ correct = 0
 total = 0
 
 for line in training_data:
-  elements = line.split("\t")
+  elements = line.strip().split("\t")
   question_id = elements.pop(0)
   correct_answer = elements.pop(1)
 
   # Get canonical elements for comparison
-  question = elements.pop(0) # keep original question texet
-  question_words = question.translate(None, string.punctuation).split() # clean and list
+  question = elements.pop(0) # keep original question text
+  # clean question and filter by vocab
+  question_words = [
+    word
+    for word
+    in question.lower().translate(None, string.punctuation).split()
+    if model.__contains__(word)
+  ]
   answers = elements # the only items left
 
   # Calculate cosine similarity between mean projection weight vectors in question and answer
-  answer_dict = {idx2answerchar(idx): answer for idx, answer in answers} # keep original answer txt
+  answer_dict = {idx2answerchar(idx): answer for idx, answer in enumerate(answers)} # keep original answer txt
+
+  # Intermediate dictionary for list of words in answer
+  answer_words_dict = {
+    answer_char: [
+      word
+      for word
+      in answer.lower().translate(None, string.punctuation).split()
+      if model.__contains__(word)
+    ] # clean answer and filter by vocab
+    for answer_char, answer
+    in answer_dict.iteritems()
+  }
+
   similarities = {
     answer_char:
       model.n_similarity(
         question_words,
-        answer.translate(None, string.punctuation).split() # clean and list
-      )
-    for answer_char, answer
-    in answer_dict
+        answer_words
+      ) if answer_words else 0. # presume 0 similarity for missing
+    for answer_char, answer_words
+    in answer_words_dict.iteritems()
   }
-  chosen_answer = max(similarities.keys(), key=lambda k: similarities[k])
+  chosen_answer = max(similarities.iteritems(), key=lambda item: item[1])[0]
 
   got_right_answer = correct_answer == chosen_answer
   correct += got_right_answer
@@ -62,9 +81,6 @@ for line in training_data:
     print("Correct Answer similarity: %.4f" % similarities[correct_answer])
     print("Chosen Answer: %s" % answer_dict[chosen_answer])
     print("Correct Answer similarity: %.4f" % similarities[chosen_answer])
-    print("Top 10 most similar word in vocabulary:")
-    print("\n".join("\t{}: {}".format(word, similarity) for word, similarity in model.most_similar(positive=question_words)))
-
 
 print("Correct: %d" % correct)
 print("Total: %d" % total)
