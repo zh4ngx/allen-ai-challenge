@@ -47,8 +47,8 @@ model = Word2Vec(
     workers=multiprocessing.cpu_count()
 )
 
+model.save("%s/%s.model" % (output_model, timestamp))
+
 # Evaluate using analogy file:
 # https://word2vec.googlecode.com/svn/trunk/questions-words.txt
 model.accuracy(open(demo_questions))
-
-model.save("%s/%s.model" % (output_model, timestamp))
