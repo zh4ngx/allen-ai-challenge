@@ -41,7 +41,9 @@ else:
 model = Word2Vec(
     sentences=LineSentence(wiki_lines),
     size=400,
-    negative=25,
+    negative=5,
+    hs=0,
+    sample=1e-5,
     window=5,
     min_count=5,
     workers=multiprocessing.cpu_count()
