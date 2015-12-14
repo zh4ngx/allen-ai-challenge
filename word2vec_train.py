@@ -8,7 +8,7 @@
     output_model: somewhere to save the LSA model
 """
 
-import logging, sys, datetime, multiprocessing
+import logging, os, sys, datetime, multiprocessing
 
 from gensim.corpora import WikiCorpus
 from gensim.models import Word2Vec
@@ -26,16 +26,17 @@ output_model = sys.argv[2]
 demo_questions = sys.argv[3] # question-words.txt analogy example
 output_lines = sys.argv[4]
 
-wiki_corpus = WikiCorpus(input_articles, lemmatize=False)
-wiki_lines = wiki_corpus.get_texts()
+if not (os.path.isfile(output_lines)):
+    wiki_corpus = WikiCorpus(input_articles, lemmatize=False)
+    wiki_lines = wiki_corpus.get_texts()
 
-# Write wiki_lines out for future use
-lines_output = open(output_lines, 'w')
-for text in wiki_lines:
-    lines_output.write(" ".join(text) + "\n")
-lines_output.close()
-
-# wiki_lines = open(output_lines)
+    # Write wiki_lines out for future use
+    lines_output = open(output_lines, 'w')
+    for text in wiki_lines:
+        lines_output.write(" ".join(text) + "\n")
+    lines_output.close()
+else:
+    wiki_lines = open(output_lines)
 
 model = Word2Vec(
     sentences=LineSentence(wiki_lines),
