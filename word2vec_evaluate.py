@@ -45,7 +45,11 @@ for line in training_data:
   ]
   answers = elements # the only items left
 
+  ##
   # Calculate cosine similarity between mean projection weight vectors in question and answer
+  ##
+
+  # First generate answer_vector
   answer_dict = {idx2answerchar(idx): answer for idx, answer in enumerate(answers)} # keep original answer txt
 
   # Intermediate dictionary for list of words in answer
