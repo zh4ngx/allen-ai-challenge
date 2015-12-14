@@ -27,16 +27,18 @@ demo_questions = sys.argv[3] # question-words.txt analogy example
 output_lines = sys.argv[4]
 
 wiki_corpus = WikiCorpus(input_articles, lemmatize=False)
+wiki_lines = wiki_corpus.get_texts()
 
 # Write wiki_lines out for future use
 lines_output = open(output_lines, 'w')
-for text in wiki_corpus.get_texts():
+for text in wiki_lines:
     lines_output.write(" ".join(text) + "\n")
-
 lines_output.close()
 
+# wiki_lines = open(output_lines)
+
 model = Word2Vec(
-    sentences=LineSentence(wiki_corpus),
+    sentences=LineSentence(wiki_lines),
     size=400,
     negative=25,
     window=5,
@@ -46,6 +48,6 @@ model = Word2Vec(
 
 # Evaluate using analogy file:
 # https://word2vec.googlecode.com/svn/trunk/questions-words.txt
-model.accuracy(demo_questions)
+model.accuracy(open(demo_questions))
 
 model.save("%s/%s.model" % (output_model, timestamp))
