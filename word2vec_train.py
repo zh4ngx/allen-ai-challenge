@@ -11,7 +11,7 @@
 import logging, os, sys, datetime, multiprocessing
 
 from gensim.corpora import WikiCorpus
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec, Phrases
 from gensim.models.word2vec import LineSentence
 
 timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -38,8 +38,10 @@ if not (os.path.isfile(output_lines)):
 else:
     wiki_lines = open(output_lines)
 
+bigram_transformer = Phrases(LineSentence(wiki_lines))
+
 model = Word2Vec(
-    sentences=LineSentence(wiki_lines),
+    sentences=bigram_transformer[LineSentence(wiki_lines)],
     size=400,
     hs=1,
     sample=1e-5,
@@ -49,7 +51,8 @@ model = Word2Vec(
 )
 
 model.save("%s/%s.model" % (output_model, timestamp))
+bigram_transformer.save("%s/%s.bigrams" % (output_model, timestamp))
 
 # Evaluate using analogy file:
 # https://word2vec.googlecode.com/svn/trunk/questions-words.txt
-model.accuracy(open(demo_questions))
+model.accuracy(open(bigram_transformer[demo_questions]))
