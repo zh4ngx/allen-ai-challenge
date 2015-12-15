@@ -4,7 +4,7 @@
 
 import logging, gensim, bz2, sys, string
 
-from utils import idx2answerchar
+from utils import idx2answerlabel
 
 logging.basicConfig(
   format='%(asctime)s : %(levelname)s : %(message)s',
@@ -29,36 +29,19 @@ for line in validation_set:
   elements = line.split("\t")
   question_id = elements.pop(0)
 
-  # clean question and filter by vocab
-  question_words = [
-    word
-    for word
-    in elements.pop(0).lower().translate(None, string.punctuation).split()
-    if model.__contains__(word)
-  ]
-  answers = elements # the only items left
+  question = elements.pop(0)
+  answers = elements
 
-  answer_words_dict = {
-    idx2answerchar(idx): [
-      word
-      for word
-      in answer.lower().translate(None, string.punctuation).split()
-      if model.__contains__(word)
-    ] # clean answer and filter by vocab
-    for idx, answer
-    in enumerate(answers)
+  answer_dict = {idx2answerlabel(idx): answer for idx, answer in enumerate(answers)}
+
+  # Score log probability of question + answer text
+  scores = {
+    answer_label: model.score((question + answer).lower().translate(None, string.punctuation).split())
+    for answer_label, answer
+    in answer_dict.iteritems()
   }
 
-  similarities = {
-    answer_char:
-      model.n_similarity(
-        question_words,
-        answer_words
-      ) if answer_words else 0. # presume 0 similarity for missing
-    for answer_char, answer_words
-    in answer_words_dict.iteritems()
-  }
-  chosen_answer = max(similarities.iteritems(), key=lambda item: item[1])[0]
+  chosen_answer = max(scores.iteritems(), key=lambda item: item[1])[0]
 
   output.write("%s,%s\n" % (question_id, chosen_answer))
 

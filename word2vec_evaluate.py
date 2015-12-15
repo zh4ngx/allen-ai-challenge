@@ -9,7 +9,7 @@
 
 import logging, gensim, sys, random, string
 
-from utils import idx2answerchar
+from utils import idx2answerlabel, preprocess_text_gensim, choose_answer
 
 logging.basicConfig(
   format='%(asctime)s : %(levelname)s : %(message)s',
@@ -35,45 +35,19 @@ for line in training_data:
   correct_answer = elements.pop(1)
 
   # Get canonical elements for comparison
-  question = elements.pop(0) # keep original question text
-  # clean question and filter by vocab
-  question_words = [
-    word
-    for word
-    in question.lower().translate(None, string.punctuation).split()
-    if model.__contains__(word)
-  ]
-  answers = elements # the only items left
+  question = elements.pop(0)
+  answers = elements
 
-  ##
-  # Calculate cosine similarity between mean projection weight vectors in question and answer
-  ##
+  answer_dict = {idx2answerlabel(idx): answer for idx, answer in enumerate(answers)}
 
-  # First generate answer_vector
-  answer_dict = {idx2answerchar(idx): answer for idx, answer in enumerate(answers)} # keep original answer txt
-
-  # Intermediate dictionary for list of words in answer
-  answer_words_dict = {
-    answer_char: [
-      word
-      for word
-      in answer.lower().translate(None, string.punctuation).split()
-      if model.__contains__(word)
-    ] # clean answer and filter by vocab
-    for answer_char, answer
+  # Score log probability of question + answer text
+  scores = {
+    answer_label: model.score([preprocess_text_gensim(model, "%s %s" % (question, answer))])
+    for answer_label, answer
     in answer_dict.iteritems()
   }
 
-  similarities = {
-    answer_char:
-      model.n_similarity(
-        question_words,
-        answer_words
-      ) if answer_words else 0. # presume 0 similarity for missing
-    for answer_char, answer_words
-    in answer_words_dict.iteritems()
-  }
-  chosen_answer = max(similarities.iteritems(), key=lambda item: item[1])[0]
+  chosen_answer = choose_answer(scores)
 
   got_right_answer = correct_answer == chosen_answer
   correct += got_right_answer
@@ -82,9 +56,9 @@ for line in training_data:
   if not got_right_answer and (random.random() > 0.95):
     print("Question: %s" % question)
     print("Correct Answer: %s" % answer_dict[correct_answer])
-    print("Correct Answer similarity: %.4f" % similarities[correct_answer])
+    print("Correct Answer similarity: %.4f" % scores[correct_answer])
     print("Chosen Answer: %s" % answer_dict[chosen_answer])
-    print("Correct Answer similarity: %.4f" % similarities[chosen_answer])
+    print("Correct Answer similarity: %.4f" % scores[chosen_answer])
 
 print("Correct: %d" % correct)
 print("Total: %d" % total)
