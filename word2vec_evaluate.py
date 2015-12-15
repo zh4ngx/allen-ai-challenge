@@ -13,7 +13,7 @@ import sys
 
 from gensim.models import Word2Vec, Phrases
 
-from utils import idx2answer_label, preprocess_for_model, choose_answer
+from utils import extract_elements, preprocess_for_model, choose_answer
 
 logging.basicConfig(
         format='%(asctime)s : %(levelname)s : %(message)s',
@@ -35,20 +35,14 @@ training_data.readline()  # advance past header line
 correct = 0
 total = 0
 
-for line in bigram_transformer[training_data]:
-    elements = line.strip().split("\t")
-    question_id = elements.pop(0)
-    correct_answer = elements.pop(1)
-
-    # Extract question and answers
-    question = elements.pop(0)
-    answers = {idx2answer_label(idx): answer for idx, answer in enumerate(elements)}
+for line in training_data:
+    question_id, question, answers, correct_answer = extract_elements(line)
 
     # Preprocess question and answers
     # Run text through model vocab filter
-    question_preprocessed = preprocess_for_model(model, question)
+    question_preprocessed = preprocess_for_model(model, question, bigram_transformer)
     answers_preprocessed = {
-        answer_label: preprocess_for_model(model, answer)
+        answer_label: preprocess_for_model(model, answer, bigram_transformer)
         for answer_label, answer
         in answers.iteritems()}
 

@@ -46,6 +46,7 @@ else:
 # Load or create bigram transformer
 if not (os.path.isfile("%s/bigram_transformer" % output_model)):
     bigram_transformer = Phrases(LineSentence(wiki_lines))
+    bigram_transformer.save("%s/bigram_transformer" % output_model)
 else:
     bigram_transformer = Phrases.load("%s/bigram_transformer" % output_model)
 
@@ -60,7 +61,6 @@ model = Word2Vec(
 )
 
 model.save("%s/%s.model" % (output_model, timestamp))
-bigram_transformer.save("%s/bigram_transformer" % output_model)
 
 # Evaluate using analogy file:
 # https://word2vec.googlecode.com/svn/trunk/questions-words.txt
