@@ -35,19 +35,36 @@ for line in training_data:
   correct_answer = elements.pop(1)
 
   # Get canonical elements for comparison
-  question = elements.pop(0)
-  answers = elements
+  question = elements.pop(0) # keep original question text
+  # clean question and filter by vocab
+  question_words = preprocess_text_gensim(model, question)
+  answers = elements # the only items left
 
-  answer_dict = {idx2answerlabel(idx): answer for idx, answer in enumerate(answers)}
+  ##
+  # Calculate cosine similarity between mean projection weight vectors in question and answer
+  ##
 
-  # Score log probability of question + answer text
-  scores = {
-    answer_label: model.score([preprocess_text_gensim(model, "%s %s" % (question, answer))])
+  # First generate answer_vector
+  answer_dict = {idx2answerlabel(idx): answer for idx, answer in enumerate(answers)} # keep original answer txt
+
+  # Intermediate dictionary for list of answer words in vocab
+  answer_words_dict = {
+    answer_label: preprocess_text_gensim(model, answer)
     for answer_label, answer
     in answer_dict.iteritems()
   }
 
-  chosen_answer = choose_answer(scores)
+  # Calculate similarities
+  similarities = {
+    answer_label:
+      model.n_similarity(
+        question_words,
+        answer_words
+      ) if answer_words else 0. # presume 0 similarity for missing
+    for answer_label, answer_words
+    in answer_words_dict.iteritems()
+  }
+  chosen_answer = choose_answer(similarities)
 
   got_right_answer = correct_answer == chosen_answer
   correct += got_right_answer
@@ -56,9 +73,9 @@ for line in training_data:
   if not got_right_answer and (random.random() > 0.95):
     print("Question: %s" % question)
     print("Correct Answer: %s" % answer_dict[correct_answer])
-    print("Correct Answer similarity: %.4f" % scores[correct_answer])
+    print("Correct Answer similarity: %.4f" % similarities[correct_answer])
     print("Chosen Answer: %s" % answer_dict[chosen_answer])
-    print("Correct Answer similarity: %.4f" % scores[chosen_answer])
+    print("Correct Answer similarity: %.4f" % similarities[chosen_answer])
 
 print("Correct: %d" % correct)
 print("Total: %d" % total)
