@@ -26,7 +26,7 @@ model = Word2Vec.load(args.model, mmap='r')
 validation_set = open("%s/validation_set.tsv" % args.project)
 validation_set.readline()
 
-output = open("%s/%s_submission.tsv" % (args.project, timestamp), "w")
+output = open("%s/%s_submission.csv" % (args.project, timestamp), "w")
 output.write("id,correctAnswer\n")
 
 for line in validation_set:
