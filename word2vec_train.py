@@ -30,6 +30,7 @@ output_model = sys.argv[2]
 demo_questions = sys.argv[3]  # question-words.txt analogy example
 output_lines = sys.argv[4]
 
+# Load or create wiki-lines.txt
 if not (os.path.isfile(output_lines)):
     wiki_corpus = WikiCorpus(input_articles, lemmatize=False)
     wiki_lines = wiki_corpus.get_texts()
@@ -42,7 +43,11 @@ if not (os.path.isfile(output_lines)):
 else:
     wiki_lines = open(output_lines)
 
-bigram_transformer = Phrases(LineSentence(wiki_lines))
+# Load or create bigram transformer
+if not (os.path.isfile("%s/bigram_transformer" % output_model)):
+    bigram_transformer = Phrases(LineSentence(wiki_lines))
+else:
+    bigram_transformer = Phrases.load("%s/bigram_transformer" % output_model)
 
 model = Word2Vec(
         sentences=bigram_transformer[LineSentence(wiki_lines)],
@@ -55,7 +60,7 @@ model = Word2Vec(
 )
 
 model.save("%s/%s.model" % (output_model, timestamp))
-bigram_transformer.save("%s/%s.bigrams" % (output_model, timestamp))
+bigram_transformer.save("%s/bigram_transformer" % output_model)
 
 # Evaluate using analogy file:
 # https://word2vec.googlecode.com/svn/trunk/questions-words.txt
