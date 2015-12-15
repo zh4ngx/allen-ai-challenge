@@ -30,7 +30,7 @@ model = Word2Vec.load(args.model, mmap='r')
 bigram_transformer = Phrases.load(args.transformer, mmap='r') if args.transformer else None
 
 # Load 'training' data
-training_data = open(args.training)
+training_data = open(args.data)
 training_data.readline()  # advance past header line
 
 correct = 0
