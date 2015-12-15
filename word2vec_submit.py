@@ -1,9 +1,9 @@
 """
   Generate csv submission for Kaggle contest
 """
-
+import argparse
+import datetime
 import logging
-import sys
 
 from gensim.models import Word2Vec, Phrases
 
@@ -13,21 +13,23 @@ logging.basicConfig(
         format='%(asctime)s : %(levelname)s : %(message)s',
         level=logging.INFO
 )
+timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-input_model = sys.argv[1]
-input_validation = sys.argv[2]
-output_file = sys.argv[3]
-input_transformer = sys.argv[4]
+parser = argparse.ArgumentParser()
+parser.add_argument("-m", "--model", help="path to word2vec/model/timestamp.model")
+parser.add_argument("-p", "--project", help="path to allen-ai & validation.tsv")
+parser.add_argument("-t", "--transformer", help="path to word2vec/model/bigram_transformer")
+args = parser.parse_args()
 
 # Load model
-model = Word2Vec.load(input_model, mmap='r')
-bigram_transformer = Phrases.load(input_transformer, mmap='r')
+model = Word2Vec.load(args.model, mmap='r')
+bigram_transformer = Phrases.load(args.transformer, mmap='r') if args.transformer else None
 
 # Load validation set and advance 1 line
-validation_set = open(input_validation)
+validation_set = open("%s/validation.tsv" % args.project)
 validation_set.readline()
 
-output = open(output_file, "w")
+output = open("%s/%s_submission.tsv" % (args.project, timestamp), "w")
 output.write("id,correctAnswer\n")
 
 for line in validation_set:

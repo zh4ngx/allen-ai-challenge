@@ -8,11 +8,11 @@
     output_model: somewhere to save the LSA model
 """
 
+import argparse
 import datetime
 import logging
 import multiprocessing
 import os
-import sys
 
 from gensim.corpora import WikiCorpus
 from gensim.models import Word2Vec, Phrases
@@ -25,30 +25,32 @@ logging.basicConfig(
         level=logging.INFO
 )
 
-input_articles = sys.argv[1]
-output_model = sys.argv[2]
-demo_questions = sys.argv[3]  # question-words.txt analogy example
-output_lines = sys.argv[4]
+parser = argparse.ArgumentParser()
+parser.add_argument("-a", "--articles", help="path to enwiki-latest-pages-articles.xml.bz2")
+parser.add_argument("-m", "--model", help="path to model dir")
+parser.add_argument("-d", "--demo", help="path to question-words.txt analogies")
+parser.add_argument("-l", "--lines", help="path to wiki-lines.txt")
+args = parser.parse_args()
 
 # Load or create wiki-lines.txt
-if not (os.path.isfile(output_lines)):
-    wiki_corpus = WikiCorpus(input_articles, lemmatize=False)
+if not (os.path.isfile(args.lines)):
+    wiki_corpus = WikiCorpus(args.articles, lemmatize=False)
     wiki_lines = wiki_corpus.get_texts()
 
     # Write wiki_lines out for future use
-    lines_output = open(output_lines, 'w')
+    lines_file = open(args.lines, 'w')
     for text in wiki_lines:
-        lines_output.write(" ".join(text) + "\n")
-    lines_output.close()
+        lines_file.write(" ".join(text) + "\n")
+    lines_file.close()
 else:
-    wiki_lines = open(output_lines)
+    wiki_lines = open(args.lines)
 
 # Load or create bigram transformer
-if not (os.path.isfile("%s/bigram_transformer" % output_model)):
+if not (os.path.isfile("%s/bigram_transformer" % args.model)):
     bigram_transformer = Phrases(LineSentence(wiki_lines))
-    bigram_transformer.save("%s/bigram_transformer" % output_model)
+    bigram_transformer.save("%s/bigram_transformer" % args.model)
 else:
-    bigram_transformer = Phrases.load("%s/bigram_transformer" % output_model)
+    bigram_transformer = Phrases.load("%s/bigram_transformer" % args.model)
 
 model = Word2Vec(
         sentences=bigram_transformer[LineSentence(wiki_lines)],
@@ -60,8 +62,9 @@ model = Word2Vec(
         workers=multiprocessing.cpu_count()
 )
 
-model.save("%s/%s.model" % (output_model, timestamp))
+model.save("%s/%s.model" % (args.model, timestamp))
 
 # Evaluate using analogy file:
 # https://word2vec.googlecode.com/svn/trunk/questions-words.txt
-model.accuracy(open(bigram_transformer[demo_questions]))
+if args.demo:
+    model.accuracy(bigram_transformer[LineSentence(open(args.demo))])

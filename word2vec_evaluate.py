@@ -6,10 +6,9 @@
   Check against correct answer
   Measure accuracy by simple percentage correct
 """
-
+import argparse
 import logging
 import random
-import sys
 
 from gensim.models import Word2Vec, Phrases
 
@@ -20,16 +19,18 @@ logging.basicConfig(
         level=logging.INFO
 )
 
-input_model = sys.argv[1]
-input_training = sys.argv[2]
-input_transformer = sys.argv[3]
+parser = argparse.ArgumentParser()
+parser.add_argument("-m", "--model", help="path to word2vec/model/timestamp.model")
+parser.add_argument("-d", "--data", help="path to training.tsv")
+parser.add_argument("-t", "--transformer", help="path to word2vec/model/bigram_transformer")
+args = parser.parse_args()
 
 # Load model and bigram transformer
-model = Word2Vec.load(input_model, mmap='r')
-bigram_transformer = Phrases.load(input_transformer, mmap='r')
+model = Word2Vec.load(args.model, mmap='r')
+bigram_transformer = Phrases.load(args.transformer, mmap='r') if args.transformer else None
 
 # Load 'training' data
-training_data = open(input_training)
+training_data = open(args.training)
 training_data.readline()  # advance past header line
 
 correct = 0
