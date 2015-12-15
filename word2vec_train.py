@@ -8,7 +8,11 @@
     output_model: somewhere to save the LSA model
 """
 
-import logging, os, sys, datetime, multiprocessing
+import datetime
+import logging
+import multiprocessing
+import os
+import sys
 
 from gensim.corpora import WikiCorpus
 from gensim.models import Word2Vec, Phrases
@@ -17,13 +21,13 @@ from gensim.models.word2vec import LineSentence
 timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 logging.basicConfig(
-    format='%(asctime)s : %(levelname)s : %(message)s',
-    level=logging.INFO
+        format='%(asctime)s : %(levelname)s : %(message)s',
+        level=logging.INFO
 )
 
 input_articles = sys.argv[1]
 output_model = sys.argv[2]
-demo_questions = sys.argv[3] # question-words.txt analogy example
+demo_questions = sys.argv[3]  # question-words.txt analogy example
 output_lines = sys.argv[4]
 
 if not (os.path.isfile(output_lines)):
@@ -41,13 +45,13 @@ else:
 bigram_transformer = Phrases(LineSentence(wiki_lines))
 
 model = Word2Vec(
-    sentences=bigram_transformer[LineSentence(wiki_lines)],
-    size=400,
-    hs=1,
-    sample=1e-5,
-    window=5,
-    min_count=5,
-    workers=multiprocessing.cpu_count()
+        sentences=bigram_transformer[LineSentence(wiki_lines)],
+        size=400,
+        hs=1,
+        sample=1e-5,
+        window=5,
+        min_count=5,
+        workers=multiprocessing.cpu_count()
 )
 
 model.save("%s/%s.model" % (output_model, timestamp))
