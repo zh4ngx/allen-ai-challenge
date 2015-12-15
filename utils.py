@@ -1,3 +1,4 @@
+import datetime
 import string
 
 
@@ -7,10 +8,9 @@ def idx2answer_label(idx):
 
 
 # preprocess text for querying model
-def preprocess_for_model(model, text, transformer=None):
+def preprocess_for_model(model, text):
     words = text.lower().translate(None, string.punctuation).split()
-    words_transformed = transformer[words] if transformer else words
-    return [word for word in words_transformed if model.__contains__(word)]
+    return [word for word in words if model.__contains__(word)]
 
 
 # Choose answer based on highest score
@@ -29,3 +29,7 @@ def extract_elements(line, is_validation=False):
     answers = {idx2answer_label(idx): answer for idx, answer in enumerate(elements)}
 
     return question_id, question, answers, correct_answer
+
+
+def generate_timestamp():
+    return datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')

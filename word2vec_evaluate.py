@@ -10,7 +10,7 @@ import argparse
 import logging
 import random
 
-from gensim.models import Word2Vec, Phrases
+from gensim.models import Word2Vec
 
 from utils import extract_elements, preprocess_for_model, choose_answer
 
@@ -22,12 +22,10 @@ logging.basicConfig(
 parser = argparse.ArgumentParser()
 parser.add_argument("-m", "--model", help="path to word2vec/model/timestamp.model")
 parser.add_argument("-d", "--data", help="path to training.tsv")
-parser.add_argument("-t", "--transformer", help="path to word2vec/model/bigram_transformer")
 args = parser.parse_args()
 
-# Load model and bigram transformer
+# Load model
 model = Word2Vec.load(args.model, mmap='r')
-bigram_transformer = Phrases.load(args.transformer, mmap='r') if args.transformer else None
 
 # Load 'training' data
 training_data = open(args.data)
@@ -41,9 +39,9 @@ for line in training_data:
 
     # Preprocess question and answers
     # Run text through model vocab filter
-    question_preprocessed = preprocess_for_model(model, question, bigram_transformer)
+    question_preprocessed = preprocess_for_model(model, question)
     answers_preprocessed = {
-        answer_label: preprocess_for_model(model, answer, bigram_transformer)
+        answer_label: preprocess_for_model(model, answer)
         for answer_label, answer
         in answers.iteritems()}
 

@@ -9,16 +9,17 @@
 """
 
 import argparse
-import datetime
 import logging
 import multiprocessing
 import os
 
 from gensim.corpora import WikiCorpus
-from gensim.models import Word2Vec, Phrases
+from gensim.models import Word2Vec
 from gensim.models.word2vec import LineSentence
 
-timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+from utils import generate_timestamp
+
+timestamp = generate_timestamp()
 
 logging.basicConfig(
         format='%(asctime)s : %(levelname)s : %(message)s',
@@ -45,20 +46,13 @@ if not (os.path.isfile(args.lines)):
 else:
     wiki_lines = open(args.lines)
 
-# Load or create bigram transformer
-if not (os.path.isfile("%s/bigram_transformer" % args.model)):
-    bigram_transformer = Phrases(LineSentence(wiki_lines))
-    bigram_transformer.save("%s/bigram_transformer" % args.model)
-else:
-    bigram_transformer = Phrases.load("%s/bigram_transformer" % args.model)
-
 model = Word2Vec(
-        sentences=bigram_transformer[LineSentence(wiki_lines)],
+        sentences=LineSentence(wiki_lines),
         size=400,
         hs=1,
-        sample=1e-5,
         window=5,
         min_count=5,
+        iter=2,
         workers=multiprocessing.cpu_count()
 )
 
@@ -67,4 +61,4 @@ model.save("%s/%s.model" % (args.model, timestamp))
 # Evaluate using analogy file:
 # https://word2vec.googlecode.com/svn/trunk/questions-words.txt
 if args.demo:
-    model.accuracy(bigram_transformer[LineSentence(open(args.demo))])
+    model.accuracy(LineSentence(open(args.demo)))
