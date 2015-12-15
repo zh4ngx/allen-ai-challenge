@@ -2,9 +2,12 @@
   Generate csv submission for Kaggle contest
 """
 
-import logging, gensim, bz2, sys, string
+import gensim
+import logging
+import string
+import sys
 
-from utils import idx2answerlabel
+from utils import idx2answer_label
 
 logging.basicConfig(
   format='%(asctime)s : %(levelname)s : %(message)s',
@@ -32,7 +35,7 @@ for line in validation_set:
   question = elements.pop(0)
   answers = elements
 
-  answer_dict = {idx2answerlabel(idx): answer for idx, answer in enumerate(answers)}
+  answer_dict = {idx2answer_label(idx): answer for idx, answer in enumerate(answers)}
 
   # Score log probability of question + answer text
   scores = {
