@@ -52,6 +52,7 @@ model = Word2Vec(
         hs=1,
         window=5,
         min_count=5,
+        sample=1e-5,
         iter=2,
         workers=multiprocessing.cpu_count()
 )
@@ -61,4 +62,4 @@ model.save("%s/%s.model" % (args.model, timestamp))
 # Evaluate using analogy file:
 # https://word2vec.googlecode.com/svn/trunk/questions-words.txt
 if args.demo:
-    model.accuracy(LineSentence(open(args.demo)))
+    model.accuracy(open(args.demo))

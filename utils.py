@@ -9,7 +9,7 @@ def idx2answer_label(idx):
 
 # preprocess text for querying model
 def preprocess_for_model(model, text):
-    words = text.lower().translate(None, string.punctuation).split()
+    words = text.strip().lower().translate(None, string.punctuation).split()
     return [word for word in words if model.__contains__(word)]
 
 
